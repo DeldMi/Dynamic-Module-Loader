@@ -1,18 +1,26 @@
 // module.js
+// ============================
+// Módulo principal do Dynamic Loader A3GS
+// ============================
+
 import * as utils from './utils.js';
 import * as ui from './ui.js';
 import * as rules from './rules.js';
 
-// A função principal que o loader chama
+/**
+ * Função principal chamada pelo loader Tampermonkey.
+ */
 export async function applyRules(windowContext, meta) {
-  utils.log('Módulo principal carregado:', meta);
+  utils.log('Módulo principal carregado com sucesso.', meta);
 
-  // Aplica as regras definidas em rules.js
+  // Aplica as regras definidas
   await rules.applyRules(windowContext, meta);
 
-  // Pode adicionar lógica extra aqui, se quiser
-  utils.log('UI e regras aplicadas com sucesso!');
+  // Mensagem de status
+  utils.log('UI e regras aplicadas. Sistema operacional.');
 }
 
-// Exportação padrão (opcional)
+/**
+ * Exportação padrão
+ */
 export default { applyRules, utils, ui, rules };

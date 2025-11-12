@@ -1,23 +1,36 @@
-
-// contém funções applyRules() que alteram o DOM;
 // rules.js
+// ============================
+// Regras e automações principais
+// ============================
+
 import { log, waitFor, injectCSS } from './utils.js';
 import { createFloatingButton } from './ui.js';
 
-// Função principal chamada pelo loader
+/**
+ * Função principal de aplicação de regras.
+ */
 export async function applyRules(windowContext, meta) {
   log('Aplicando regras do módulo...', meta);
 
-  // Exemplo: aguarda um elemento e muda o fundo
+  // Aguarda o carregamento do corpo da página
   const el = await waitFor('body');
-  el.style.background = '#f0f7ff';
+  el.style.background = '#f8fbff';
 
-  // Injeta CSS personalizado
-  injectCSS(`h1, h2 { color: #0059b2 !important; }`);
+  // Injeta um CSS de personalização global
+  injectCSS(`
+    h1, h2, h3 {
+      color: #004f9f !important;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #0078ff !important;
+    }
+  `);
 
-  // Cria botão de exemplo
+  // Cria o botão flutuante
   createFloatingButton('⚙️', () => {
-    alert('Script A3GS ativo! Fonte: ' + (meta.url || meta.source));
+    alert('Script A3GS ativo! Origem: ' + (meta?.url || 'Local'));
   });
 
   log('Regras aplicadas com sucesso.');

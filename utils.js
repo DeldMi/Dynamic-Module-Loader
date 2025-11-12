@@ -1,20 +1,28 @@
-// ontém utilitários (por exemplo, log(), injectCSS());
-
 // utils.js
+// ============================
+// Utilitários base para o sistema dinâmico A3GS
+// ============================
 
-// Exemplo de log formatado
+/**
+ * Exibe logs padronizados no console.
+ */
 export function log(...args) {
-  console.log('[A3GS-UTILS]', ...args);
+  console.log('%c[A3GS-UTILS]', 'color: #0078ff; font-weight: bold;', ...args);
 }
 
-// Adiciona CSS dinamicamente na página
-export function injectCSS(css) {
+/**
+ * Adiciona CSS personalizado na página.
+ */
+export function injectCSS(cssText) {
   const style = document.createElement('style');
-  style.textContent = css;
+  style.textContent = cssText;
   document.head.appendChild(style);
+  log('CSS injetado com sucesso.');
 }
 
-// Espera o elemento aparecer no DOM (útil em SPAs)
+/**
+ * Aguarda um seletor aparecer no DOM.
+ */
 export function waitFor(selector, timeout = 5000) {
   return new Promise((resolve, reject) => {
     const el = document.querySelector(selector);
@@ -36,6 +44,4 @@ export function waitFor(selector, timeout = 5000) {
   });
 }
 
-// Exportação padrão opcional
 export default { log, injectCSS, waitFor };
-
