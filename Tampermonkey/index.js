@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         A3GS Tampermonkey Dynamic Module Loader
+// @name         DeldMi Tampermonkey Dynamic Module Loader
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Carrega módulos JS (local ou GitHub/raw), verifica atualizações automaticamente e reaplica regras/funções.
@@ -24,10 +24,10 @@
 */
 
 /* ========== CONFIGURAÇÃO ========== */
-const REMOTE_MODULE_URL_KEY = 'a3gs.remoteModuleURL';        // chave persitente para a URL do módulo remoto
-const LOCAL_OVERRIDE_KEY_PREFIX = 'a3gs.localOverride.';     // prefixo para override local (pode ter vários IDs)
-const LAST_HASH_KEY_PREFIX = 'a3gs.lastHash.';               // prefixo para armazenar último hash
-const UPDATE_INTERVAL_KEY = 'a3gs.updateIntervalMinutes';   // em minutos
+const REMOTE_MODULE_URL_KEY = 'DeldMi.remoteModuleURL';        // chave persitente para a URL do módulo remoto
+const LOCAL_OVERRIDE_KEY_PREFIX = 'DeldMi.localOverride.';     // prefixo para override local (pode ter vários IDs)
+const LAST_HASH_KEY_PREFIX = 'DeldMi.lastHash.';               // prefixo para armazenar último hash
+const UPDATE_INTERVAL_KEY = 'DeldMi.updateIntervalMinutes';   // em minutos
 
 // valores padrão — ajuste aqui se quiser
 if (!GM_getValue(REMOTE_MODULE_URL_KEY)) {
@@ -127,32 +127,32 @@ async function loadAndWatchModule(moduleId, remoteUrl, onUpdate) {
 
     if (lastHash === hash) {
       // sem mudança — ainda assim podemos optar por (re)importar na primeira vez
-      console.log(`[A3GS] ${moduleId} sem mudança (hash=${hash}).`);
+      console.log(`[DeldMi] ${moduleId} sem mudança (hash=${hash}).`);
       // se nunca foi importado (lastHash definido mas sem módulo carregado?), forçamos import
       // para simplicidade, aqui importamos sempre ao iniciar pela primeira vez:
       // Se quiser evitar import repetido, podemos trackear um 'loaded' runtime.
-      if (!window.__a3gs_loaded_modules) window.__a3gs_loaded_modules = {};
-      if (!window.__a3gs_loaded_modules[moduleId]) {
+      if (!window.__DeldMi_loaded_modules) window.__DeldMi_loaded_modules = {};
+      if (!window.__DeldMi_loaded_modules[moduleId]) {
         const mod = await importFromString(src.text, moduleId);
-        window.__a3gs_loaded_modules[moduleId] = mod;
+        window.__DeldMi_loaded_modules[moduleId] = mod;
         onUpdate(mod, meta);
       }
       return meta;
     }
 
     // houve mudança (ou primeiro carregamento)
-    console.log(`[A3GS] Atualização detectada para ${moduleId}. Novo hash: ${hash}`);
+    console.log(`[DeldMi] Atualização detectada para ${moduleId}. Novo hash: ${hash}`);
     const mod = await importFromString(src.text, moduleId);
 
     // salvar hash e marcar como carregado
     GM_setValue(lastHashKey, hash);
-    if (!window.__a3gs_loaded_modules) window.__a3gs_loaded_modules = {};
-    window.__a3gs_loaded_modules[moduleId] = mod;
+    if (!window.__DeldMi_loaded_modules) window.__DeldMi_loaded_modules = {};
+    window.__DeldMi_loaded_modules[moduleId] = mod;
 
     // notificação opcional
     try {
       GM_notification({
-        title: 'A3GS: Módulo atualizado',
+        title: 'DeldMi: Módulo atualizado',
         text: `${moduleId} (${src.source}) atualizado.`,
         timeout: 4000
       });
@@ -163,7 +163,7 @@ async function loadAndWatchModule(moduleId, remoteUrl, onUpdate) {
     onUpdate(mod, meta);
     return meta;
   } catch (err) {
-    console.error('[A3GS] Erro ao carregar módulo:', err);
+    console.error('[DeldMi] Erro ao carregar módulo:', err);
     throw err;
   }
 }
@@ -177,7 +177,7 @@ async function loadAndWatchModule(moduleId, remoteUrl, onUpdate) {
  * export default { ... }
  */
 async function defaultOnUpdate(mod, meta) {
-  console.log('[A3GS] onUpdate invoked for', meta, mod);
+  console.log('[DeldMi] onUpdate invoked for', meta, mod);
 
   // exemplo: se o módulo exportar 'applyRules', chamamos com o contexto global
   try {
@@ -188,10 +188,10 @@ async function defaultOnUpdate(mod, meta) {
       // outra convenção possível
       await mod.default.apply(unsafeWindow || window, meta);
     } else {
-      console.warn('[A3GS] Módulo não exporta applyRules nem default.apply — verifique o contrato do módulo.');
+      console.warn('[DeldMi] Módulo não exporta applyRules nem default.apply — verifique o contrato do módulo.');
     }
   } catch (err) {
-    console.error('[A3GS] Erro dentro do módulo ao aplicar regras:', err);
+    console.error('[DeldMi] Erro dentro do módulo ao aplicar regras:', err);
   }
 }
 
@@ -209,7 +209,7 @@ async function defaultOnUpdate(mod, meta) {
     try {
       await loadAndWatchModule(moduleId, remoteUrl, defaultOnUpdate);
     } catch (err) {
-      console.error('[A3GS] tryLoad erro:', err);
+      console.error('[DeldMi] tryLoad erro:', err);
     }
   }
 
@@ -222,7 +222,7 @@ async function defaultOnUpdate(mod, meta) {
     const newRemote = GM_getValue(REMOTE_MODULE_URL_KEY);
     if (newRemote !== remoteUrl) {
       // se a URL remota mudou via menu, nós atualizamos a referência
-      console.info('[A3GS] Remote URL atualizada via configuração:', newRemote);
+      console.info('[DeldMi] Remote URL atualizada via configuração:', newRemote);
       remoteUrl = newRemote;
     }
     await tryLoad();
@@ -231,15 +231,15 @@ async function defaultOnUpdate(mod, meta) {
   /* ========== MENU DE CONTROLE (Tampermonkey) ========== */
 
   // Forçar atualização agora
-  GM_registerMenuCommand('A3GS: Forçar atualização', async () => {
-    console.info('[A3GS] Forçando atualização manualmente...');
+  GM_registerMenuCommand('DeldMi: Forçar atualização', async () => {
+    console.info('[DeldMi] Forçando atualização manualmente...');
     // Apagar último hash para forçar recarregar
     GM_setValue(LAST_HASH_KEY_PREFIX + moduleId, null);
     await tryLoad();
   });
 
   // Editar URL remota (prompt)
-  GM_registerMenuCommand('A3GS: Configurar URL remota', async () => {
+  GM_registerMenuCommand('DeldMi: Configurar URL remota', async () => {
     const cur = GM_getValue(REMOTE_MODULE_URL_KEY);
     const v = prompt('Informe a URL raw do módulo JS (GitHub/raw ou similar):', cur);
     if (v && v.trim()) {
@@ -252,7 +252,7 @@ async function defaultOnUpdate(mod, meta) {
   });
 
   // Editar override local — cola o código que irá substituir a fonte remota
-  GM_registerMenuCommand('A3GS: Editar override local (colar código)', async () => {
+  GM_registerMenuCommand('DeldMi: Editar override local (colar código)', async () => {
     const localKey = LOCAL_OVERRIDE_KEY_PREFIX + moduleId;
     const cur = GM_getValue(localKey, '');
     const v = prompt('Cole aqui o código JS que irá sobrescrever o módulo remoto.\nDeixe vazio para remover o override.', cur);
@@ -269,24 +269,24 @@ async function defaultOnUpdate(mod, meta) {
   });
 
   // Limpar cache/ultimo hash
-  GM_registerMenuCommand('A3GS: Limpar último hash/cache', () => {
+  GM_registerMenuCommand('DeldMi: Limpar último hash/cache', () => {
     GM_setValue(LAST_HASH_KEY_PREFIX + moduleId, null);
     alert('Último hash limpo. Próximo check forçará reimport.');
   });
 
   // Ver informações de debug
-  GM_registerMenuCommand('A3GS: Info (URL/interval/hash)', () => {
+  GM_registerMenuCommand('DeldMi: Info (URL/interval/hash)', () => {
     const info = {
       remoteUrl: GM_getValue(REMOTE_MODULE_URL_KEY),
       updateIntervalMinutes: GM_getValue(UPDATE_INTERVAL_KEY),
       lastHash: GM_getValue(LAST_HASH_KEY_PREFIX + moduleId),
       hasLocalOverride: !!GM_getValue(LOCAL_OVERRIDE_KEY_PREFIX + moduleId, '')
     };
-    alert('A3GS Info:\n' + JSON.stringify(info, null, 2));
+    alert('DeldMi Info:\n' + JSON.stringify(info, null, 2));
   });
 
   // Ajustar intervalo (em minutos)
-  GM_registerMenuCommand('A3GS: Definir intervalo de checagem (min)', async () => {
+  GM_registerMenuCommand('DeldMi: Definir intervalo de checagem (min)', async () => {
     const cur = GM_getValue(UPDATE_INTERVAL_KEY, 5);
     const v = prompt('Intervalo de checagem em minutos (inteiro):', String(cur));
     if (v === null) return;

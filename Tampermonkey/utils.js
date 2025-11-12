@@ -1,47 +1,36 @@
 // utils.js
-// ============================
-// Utilitários base para o sistema dinâmico A3GS
-// ============================
+// Funções utilitárias para logging, download e manipulação de mídia.
 
-/**
- * Exibe logs padronizados no console.
- */
-export function log(...args) {
-  console.log('%c[A3GS-UTILS]', 'color: #0078ff; font-weight: bold;', ...args);
+function log(msg) {
+  console.log(`[DynamicLoader] ${msg}`);
 }
 
-/**
- * Adiciona CSS personalizado na página.
- */
-export function injectCSS(cssText) {
-  const style = document.createElement('style');
-  style.textContent = cssText;
-  document.head.appendChild(style);
-  log('CSS injetado com sucesso.');
+// Faz download de um arquivo a partir de uma URL
+function downloadFile(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
-/**
- * Aguarda um seletor aparecer no DOM.
- */
-export function waitFor(selector, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const el = document.querySelector(selector);
-    if (el) return resolve(el);
-
-    const obs = new MutationObserver(() => {
-      const el = document.querySelector(selector);
-      if (el) {
-        obs.disconnect();
-        resolve(el);
-      }
+// Gera thumbnail de vídeo (ou retorna imagem padrão)
+function getThumbnail(url) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.src = url;
+    video.crossOrigin = 'anonymous';
+    video.addEventListener('loadeddata', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 160;
+      canvas.height = 90;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, 160, 90);
+      resolve(canvas.toDataURL('image/png'));
     });
-
-    obs.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => {
-      obs.disconnect();
-      reject(new Error('Elemento não encontrado: ' + selector));
-    }, timeout);
+    video.addEventListener('error', () => {
+      resolve('https://via.placeholder.com/160x90.png?text=Sem+Thumbnail');
+    });
   });
 }
-
-export default { log, injectCSS, waitFor };

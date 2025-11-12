@@ -1,46 +1,48 @@
 // ui.js
-// ============================
-// Interface visual (UI) do sistema A3GS
-// ============================
+// Cria interface gráfica com cards para cada link de vídeo encontrado.
 
-import { log, injectCSS } from './utils.js';
+async function createVideoCard(url) {
+  const container = document.getElementById('dynamicLoader-container') || createContainer();
+  const card = document.createElement('div');
+  card.className = 'dynamic-card';
 
-/**
- * Cria um botão flutuante fixo no canto da tela.
- */
-export function createFloatingButton(label = '⚙️', onClick = null) {
-  injectCSS(`
-    #a3gs-float-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #0078ff, #004f9f);
-      color: #fff;
-      border-radius: 50%;
-      font-size: 22px;
-      width: 55px;
-      height: 55px;
-      text-align: center;
-      line-height: 55px;
-      cursor: pointer;
-      z-index: 99999;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-      transition: all 0.3s ease-in-out;
-    }
-    #a3gs-float-btn:hover {
-      transform: scale(1.1);
-      background: linear-gradient(135deg, #005fcf, #003c8f);
-    }
-  `);
+  const thumb = await getThumbnail(url);
 
-  const btn = document.createElement('div');
-  btn.id = 'a3gs-float-btn';
-  btn.textContent = label;
-  btn.title = 'Abrir painel A3GS';
-  btn.onclick = onClick || (() => alert('Painel A3GS ativado.'));
-  document.body.appendChild(btn);
+  card.innerHTML = `
+    <div class="card-header">
+      <img src="${thumb}" alt="thumb" class="thumb"/>
+      <span class="video-url">${url}</span>
+      <button class="close-btn">×</button>
+    </div>
+    <div class="card-actions">
+      <button class="btn-download" data-type="mp4">Baixar MP4</button>
+      <button class="btn-download" data-type="mp3">Baixar MP3</button>
+      <button class="btn-download" data-type="m3u8">Baixar M3U8</button>
+    </div>
+  `;
 
-  log('Botão flutuante criado com sucesso.');
+  card.querySelector('.close-btn').onclick = () => card.remove();
+  card.querySelectorAll('.btn-download').forEach(btn => {
+    btn.onclick = () => downloadFile(url, `midia.${btn.dataset.type}`);
+  });
+
+  container.appendChild(card);
 }
 
-export default { createFloatingButton };
+function createContainer() {
+  const div = document.createElement('div');
+  div.id = 'dynamicLoader-container';
+  div.style.position = 'fixed';
+  div.style.top = '10px';
+  div.style.right = '10px';
+  div.style.zIndex = 99999;
+  div.style.width = '350px';
+  div.style.maxHeight = '90vh';
+  div.style.overflowY = 'auto';
+  div.style.background = '#fff';
+  div.style.padding = '10px';
+  div.style.border = '1px solid #ccc';
+  div.style.borderRadius = '10px';
+  document.body.appendChild(div);
+  return div;
+}

@@ -1,39 +1,16 @@
 // rules.js
-// ============================
-// Regras e automações principais
-// ============================
+// Varre a página, localiza links de vídeos e gera os cards correspondentes.
 
-import { log, waitFor, injectCSS } from './utils.js';
-import { createFloatingButton } from './ui.js';
+async function applyRules() {
+  log('Analisando página em busca de vídeos...');
 
-/**
- * Função principal de aplicação de regras.
- */
-export async function applyRules(windowContext, meta) {
-  log('Aplicando regras do módulo...', meta);
+  const links = Array.from(document.querySelectorAll('a[href]'))
+    .map(a => a.href)
+    .filter(h => /\.(mp4|m3u8|mov|avi|webm|mp3)$/i.test(h));
 
-  // Aguarda o carregamento do corpo da página
-  const el = await waitFor('body');
-  el.style.background = '#f8fbff';
+  log(`Encontrados ${links.length} links de mídia.`);
 
-  // Injeta um CSS de personalização global
-  injectCSS(`
-    h1, h2, h3 {
-      color: #004f9f !important;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    a:hover {
-      text-decoration: underline;
-      color: #0078ff !important;
-    }
-  `);
-
-  // Cria o botão flutuante
-  createFloatingButton('⚙️', () => {
-    alert('Script A3GS ativo! Origem: ' + (meta?.url || 'Local'));
-  });
-
-  log('Regras aplicadas com sucesso.');
+  for (const link of links) {
+    await createVideoCard(link);
+  }
 }
-
-export default { applyRules };

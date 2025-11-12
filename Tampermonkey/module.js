@@ -1,26 +1,42 @@
 // module.js
-// ============================
-// Módulo principal do Dynamic Loader A3GS
-// ============================
+// Núcleo do sistema dinâmico — responsável por carregar, atualizar e executar os módulos remotos (utils, ui, rules).
+// Requer permissões GM_* no Tampermonkey.
+// Autor: André Felipe
+// Data: 2025-11-12
 
-import * as utils from './utils.js';
-import * as ui from './ui.js';
-import * as rules from './rules.js';
+(async function() {
+  'use strict';
 
-/**
- * Função principal chamada pelo loader Tampermonkey.
- */
-export async function applyRules(windowContext, meta) {
-  utils.log('Módulo principal carregado com sucesso.', meta);
+  const REPO_BASE = 'https://raw.githubusercontent.com/DeldMi/Dynamic-Module-Loader/main/';
+  const MODULES = ['utils.js', 'ui.js', 'rules.js'];
+  const CACHE = {};
 
-  // Aplica as regras definidas
-  await rules.applyRules(windowContext, meta);
+  // Utilitário: busca módulo remoto e retorna o código
+  async function fetchModule(name) {
+    const url = REPO_BASE + name;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Falha ao carregar ${name}: ${res.status}`);
+    return await res.text();
+  }
 
-  // Mensagem de status
-  utils.log('UI e regras aplicadas. Sistema operacional.');
-}
+  // Função principal de inicialização
+  async function init() {
+    console.log('[DynamicLoader] Iniciando carregamento de módulos...');
+    for (const name of MODULES) {
+      const code = await fetchModule(name);
+      CACHE[name] = code;
+      try {
+        eval(code); // executa o módulo
+        console.log(`[DynamicLoader] ${name} carregado com sucesso.`);
+      } catch (e) {
+        console.error(`[DynamicLoader] Erro ao executar ${name}:`, e);
+      }
+    }
+    if (typeof applyRules === 'function') applyRules();
+  }
 
-/**
- * Exportação padrão
- */
-export default { applyRules, utils, ui, rules };
+  // Atualização periódica (a cada 10 minutos)
+  setInterval(init, 10 * 60 * 1000);
+  await init();
+
+})();
