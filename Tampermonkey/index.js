@@ -31,7 +31,7 @@ const UPDATE_INTERVAL_KEY = 'a3gs.updateIntervalMinutes';   // em minutos
 
 // valores padrão — ajuste aqui se quiser
 if (!GM_getValue(REMOTE_MODULE_URL_KEY)) {
-  GM_setValue(REMOTE_MODULE_URL_KEY, 'https://raw.githubusercontent.com/DeldMi/Dynamic-Module-Loader/refs/heads/main/module.js');
+  GM_setValue(REMOTE_MODULE_URL_KEY, 'https://raw.githubusercontent.com/DeldMi/Dynamic-Module-Loader/refs/heads/main/Tampermonkey/module.js');
 }
 if (!GM_getValue(UPDATE_INTERVAL_KEY)) {
   GM_setValue(UPDATE_INTERVAL_KEY, 5); // checar a cada 5 minutos por padrão
